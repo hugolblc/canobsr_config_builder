@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>canObsR 3.1.0 — Configuration files guide</title>
+<style>
+:root{--green:#217346;--green-dark:#123f2f;--ink:#17342a;--muted:#5d7169;--line:#d9e5de;--paper:#fff;--bg:#f4f7f5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.58}
+.topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px max(18px,calc((100vw - 1500px)/2));background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;box-shadow:0 2px 10px rgba(12,46,33,.18)}
+.brand{font-weight:800;letter-spacing:.01em}button{background:#fff;color:var(--green);border:0;border-radius:8px;padding:9px 14px;font-weight:800;cursor:pointer}
+[hidden]{display:none!important}.guide-shell{max-width:1500px;margin:auto;display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;padding:24px}
+.toc{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 98px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.toc h2{font-size:1rem;margin:0 0 8px;border:0;padding:0}.toc a{display:block;color:var(--green);text-decoration:none;padding:5px 7px;border-radius:6px;font-size:.9rem}.toc a:hover{background:#e7f4ec}
+main{min-width:0}main>h1{margin:0;font-size:clamp(2rem,5vw,3.1rem)}.lede{margin:0 0 24px;color:var(--muted)}
+section{scroll-margin-top:78px;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:24px;margin:0 0 20px;box-shadow:0 4px 16px rgba(14,50,36,.04)}
+h2{margin-top:0;border-bottom:2px solid #e7f4ec;padding-bottom:10px}h3{margin-top:28px}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}pre{background:#10271f;color:#e5fff0;padding:16px;border-radius:9px;overflow:auto;line-height:1.45}
+.table-wrap{overflow:auto;margin:14px 0}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:9px 11px;border-bottom:1px solid #e6ece8}th{background:#edf6f0}ul{padding-left:22px}
+@media(max-width:900px){.guide-shell{grid-template-columns:1fr;padding:14px}.toc{position:static;max-height:none;columns:2}.toc h2{column-span:all}}
+@media(max-width:560px){.toc{columns:1}section{padding:17px}}
+@media print{.topbar,.toc{display:none}body{background:#fff}.guide-shell{display:block;padding:0}section{box-shadow:none;break-inside:avoid}}
+</style></head><body>
+<div class='topbar'><div class='brand'>canObsR · 3.1.0</div><button id='language' type='button'>Français</button></div>
+<div id='en-page' class='language-page'>
+    <div class='guide-shell'>
+      <aside class='toc' aria-label='Contents'><h2>Contents</h2><a href='#en-0'>0. General conventions</a><a href='#en-1'>1. site.csv</a><a href='#en-2'>2. survey.csv</a><a href='#en-3'>3. sensor.csv</a><a href='#en-4'>4. product.csv</a><a href='#en-5'>5. crownfile_param.csv</a><a href='#en-6'>6. tree_picture_zooms.csv</a><a href='#en-7'>7. contributors.csv</a><a href='#en-8'>8. plots_list.csv</a><a href='#en-9'>9. dawkins_param.csv</a><a href='#en-10'>10. taxa_ref.csv</a><a href='#en-11'>11. Generated files</a><a href='#en-12'>12. UAV_folder.csv</a><a href='#en-13'>13. UAV_file_patterns.csv</a><a href='#en-14'>14. vectors.csv</a><a href='#en-15'>15. YAML and reports</a><a href='#en-a'>A. Inventory</a><a href='#en-b'>B. Consistency</a><a href='#en-c'>C. Evolution</a><a href='#en-d'>D. Reserved</a></aside>
+      <main><h1>Configuration files guide</h1><p class='lede'>canObsR — schema 3.1.0</p><section id='en-0'><h2>0. General conventions</h2><div class='table-wrap'><table><thead><tr><th>Item</th><th>Requirement</th></tr></thead><tbody><tr><td>Version</td><td>3.1.0</td></tr><tr><td>Canonical surveys</td><td>RGB, MS, DLS, tree_pictures in survey.csv and every other file.</td></tr><tr><td>Booleans</td><td>TRUE or FALSE, uppercase and unquoted.</td></tr><tr><td>Date</td><td>Every date uses yyyymmdd.</td></tr><tr><td>Plot reference</td><td>plots_list and reference/plots_list.csv.</td></tr><tr><td>Taxonomic reference</td><td>reference/taxa_ref.csv.</td></tr><tr><td>Equivalence</td><td>Shiny and direct R calls produce the same diagnostics.</td></tr></tbody></table></div><div class='table-wrap'><table><thead><tr><th>Level</th><th>Expected effect</th></tr></thead><tbody><tr><td>Blocking error</td><td>Prevents the current file from being saved or prevents final publication.</td></tr><tr><td>Warning</td><td>Is reported but does not block saving or publication.</td></tr></tbody></table></div><h3>0.1 Target config architecture</h3><p>Bracketed annotations are not part of file names.</p><pre><code>config/
+├── param/
+│   ├── site.csv                         [entered]
+│   ├── survey.csv                       [entered]
+│   ├── sensor.csv                       [entered]
+│   ├── product.csv                      [entered]
+│   ├── crownfile_param.csv              [entered]
+│   ├── crownfile_vars.csv               [generated]
+│   ├── tree_picture_zooms.csv           [entered, conditional]
+│   └── dawkins_param.csv                [entered, conditional]
+├── reference/
+│   ├── contributors.csv                 [entered]
+│   ├── plots_list.csv                   [entered, conditional]
+│   ├── taxa_ref.csv                     [entered, conditional, unchecked]
+│   ├── dawkins.csv                      [generated, conditional]
+│   ├── dbh_types.csv                    [generated]
+│   ├── geom_modif.csv                   [generated, conditional]
+│   ├── lianas.csv                       [generated]
+│   ├── tree_status.csv                  [generated, conditional]
+│   └── type_obs.csv                     [generated]
+├── path/
+│   ├── UAV_folder.csv                   [entered]
+│   ├── UAV_file_patterns.csv            [entered]
+│   └── vectors.csv                      [entered, ignored]
+├── archive/                              [previous publication files]
+│   ├── observatory_before_yyyymmdd[_n].yaml
+│   ├── site_check_before_yyyymmdd[_n].txt
+│   └── modification_yyyymmdd[_n].txt
+├── observatory.yaml                     [generated at the end, not connected with data]
+├── modification_yyyymmdd[_n].txt        [generated at publication]
+├── all_products.csv                     [generated later, connected with data]
+├── products_check.txt                   [generated later, connected with data]
+├── {site.name}_observatory_infos.html   [generated at the end, not connected with data]
+└── site_check.txt                       [generated at the end, not connected with data]</code></pre><h3>0.2 General creation and validation workflow</h3><div class='table-wrap'><table><thead><tr><th>Order</th><th>Step</th><th>Condition</th></tr></thead><tbody><tr><td>1</td><td>param/site.csv</td><td>Always</td></tr><tr><td>2</td><td>param/survey.csv</td><td>Always</td></tr><tr><td>3</td><td>param/sensor.csv</td><td>Always</td></tr><tr><td>4</td><td>param/product.csv</td><td>Always</td></tr><tr><td>5</td><td>param/crownfile_param.csv</td><td>Always</td></tr><tr><td>6</td><td>param/tree_picture_zooms.csv</td><td>tree_pictures = TRUE</td></tr><tr><td>7</td><td>reference/contributors.csv</td><td>Always</td></tr><tr><td>8</td><td>reference/plots_list.csv</td><td>plots_list = TRUE</td></tr><tr><td>9</td><td>param/dawkins_param.csv</td><td>dawkins = TRUE</td></tr><tr><td>10</td><td>reference/taxa_ref.csv</td><td>taxa_ref = TRUE</td></tr><tr><td>11</td><td>Generated files</td><td>After user-entered reference files</td></tr><tr><td>12</td><td>path/UAV_folder.csv</td><td>Always</td></tr><tr><td>13</td><td>path/UAV_file_patterns.csv</td><td>Always</td></tr><tr><td>14</td><td>path/vectors.csv</td><td>May be empty; ignored by the pipeline</td></tr><tr><td>15</td><td>observatory.yaml and site HTML report</td><td>After the global configuration check</td></tr></tbody></table></div>
+        <p>Operation 1 begins by creating only <code>config/param</code>, <code>config/reference</code>, and
+        <code>config/path</code>. It creates no CSV. At each step, the table is editable immediately. An
+        imported CSV or Excel file replaces the draft shown on screen but remains editable. The file is
+        written only after <strong>Validate and save</strong> succeeds; <strong>Next file</strong> then opens the
+        following applicable step.</p>
+        <p>Operation 2 loads an existing configuration. The published and candidate tables are shown side by side.
+        Modified cells, deleted rows, and added rows have distinct colours. A panel below the tables lists the
+        consequences for dependent configuration files and later data checks.</p>
+        <p>Every save checks the current file and its consistency with already validated files. Step 15 runs
+        the complete configuration-only check. After it passes, the previous YAML and site check are moved to
+        <code>archive/</code>, a dated modification report records before/after file contents, and all derived
+        configuration reports are rebuilt. Same-day publications use <code>_2</code>, <code>_3</code>, and so on.
+        Operation 1 never tests a
+        configured path, opens scientific data, or requires server access. In operation 3, Shiny reads the
+        server aliases declared in crownfile_param.csv and UAV_folder.csv and displays one local-root field for
+        each alias. Operation 3 resolves the crownfile from those mappings and applies the publication lock
+        before scientific-data checks. Every opened GeoPackage layer has its active sf geometry column normalized
+        to <code>geometry</code>, including layers stored with a column named <code>geom</code>. The product scan
+        always writes <code>products_check.txt</code>. A successful result displays <strong>PASS</strong> or
+        <strong>PASS WITH WARNINGS</strong> and enables <strong>Generate or update all_products.csv</strong> plus
+        a detailed or grouped raw/processed comparison. The four
+        operations — <strong>Generate the config folder</strong>, <strong>Modify the config folder</strong>,
+        <strong>Check parameters and data</strong>, and <strong>Visualise parameters and data</strong> — are
+        available in Shiny and through direct R calls.</p></section><section id='en-1'><h2>1. param/site.csv</h2><div class='table-wrap'><table><thead><tr><th>Field</th><th>Requirement</th></tr></thead><tbody><tr><td>param</td><td>Exact ordered values: id_site, name, location, crs. No additional row.</td></tr><tr><td>id_site</td><td>Required; ASCII letters, digits, underscore, hyphen, and dot only. No spaces.</td></tr><tr><td>name</td><td>Required; spaces allowed; accented characters forbidden.</td></tr><tr><td>location</td><td>Required; spaces allowed; accented characters forbidden.</td></tr><tr><td>crs</td><td>Required CRS recognized by sf, for example EPSG:32632.</td></tr><tr><td>Placeholders</td><td>Use <code>{site.&lt;param&gt;}</code>; see step 13.</td></tr></tbody></table></div><pre><code>param;site_value
+id_site;mba
+name;Mbalmayo
+location;Cameroon
+crs;EPSG:32632</code></pre></section><section id='en-2'><h2>2. param/survey.csv</h2><div class='table-wrap'><table><thead><tr><th>Field</th><th>Requirement</th></tr></thead><tbody><tr><td>survey</td><td>Exactly RGB, MS, DLS, and tree_pictures, once each. All four rows are always present; any order.</td></tr><tr><td>status</td><td>TRUE or FALSE. At least one survey is TRUE. A disabled survey remains present with FALSE.</td></tr></tbody></table></div><pre><code>survey;status
+RGB;TRUE
+MS;FALSE
+DLS;FALSE
+tree_pictures;FALSE</code></pre></section><section id='en-3'><h2>3. param/sensor.csv</h2><ul>
+    <li>Exact columns: <code>sensor;survey;start_date;end_date;status</code>.</li>
+    <li>Unique key: <code>sensor/survey/start_date</code>.</li>
+    <li>Dates use yyyymmdd; periods are inclusive. No overlap is allowed within a survey, including two periods of the same sensor. Gaps and <code>end_date = start_date</code> are allowed.</li>
+    <li><code>active</code> requires an empty end_date and is open through today. <code>not active</code> requires an end_date on or after start_date.</li>
+    <li>A sensor may cover several surveys. A row for a FALSE survey or an active survey without any sensor is blocking. An active survey with historical sensors only produces a warning.</li>
+    </ul><pre><code>sensor;survey;start_date;end_date;status
+Mavic2;RGB;20220730;;active</code></pre></section><section id='en-4'><h2>4. param/product.csv</h2><p>The canonical catalogue contains 17 survey/product pairs. In the operation 1 Shiny editor, only rows belonging to surveys whose status is TRUE are displayed; the example below therefore corresponds to RGB only. On save, hidden rows for FALSE surveys are automatically retained with status FALSE so product.csv remains a complete canonical file. Every product of each active survey is present: at least one is TRUE, a FALSE product produces a warning, and a derived TRUE product with its raw product FALSE is blocking.</p><pre><code>survey;product;status
+RGB;RGB_raw;TRUE
+RGB;RGB_orthomosaic;TRUE
+RGB;RGB_DEM;FALSE
+RGB;RGB_vignette;FALSE
+RGB;RGB_indices;FALSE
+RGB;RGB_phenophase;FALSE</code></pre></section><section id='en-5'><h2>5. param/crownfile_param.csv</h2><div class='table-wrap'><table><thead><tr><th>Parameter</th><th>Value and consequence</th></tr></thead><tbody><tr><td>path</td><td>Path from the server root to the crownfile. It must be relative; absolute paths and .. segments are forbidden.</td></tr><tr><td>server</td><td>Portable alias of the server containing the crownfile. Its local root is supplied to operation 3 and is never written in config/.</td></tr><tr><td>crownfile_type</td><td>dynamic or light.</td></tr><tr><td>plots_list</td><td>TRUE/FALSE; controls reference/plots_list.csv and the plot_name requirement.</td></tr><tr><td>taxa_ref</td><td>TRUE/FALSE; controls reference/taxa_ref.csv and the taxa_id requirement.</td></tr><tr><td>dawkins</td><td>TRUE/FALSE; controls dawkins_param.csv, dawkins.csv, and the dawkins_code requirement.</td></tr></tbody></table></div><pre><code>param;value
+path;observatories/mbalmayo/crowns.gpkg
+server;work
+crownfile_type;dynamic
+plots_list;TRUE
+taxa_ref;FALSE
+dawkins;TRUE</code></pre><ul><li>The crownfile is always a GeoPackage file with the <code>.gpkg</code> extension.</li><li><code>dynamic</code> requires the geometry and infos layers and requires <code>Tree_Status</code> and <code>Geom_Modif</code> in geometry.</li><li><code>light</code> contains exactly one spatial layer named <code>crowns</code> and does not require those two variables. Every crownfile_vars.csv row then has <code>layer = crowns</code>.</li><li>When <code>plots_list = TRUE</code>, a plot_name absent from plots_list.csv produces a warning.</li><li>When <code>taxa_ref = TRUE</code>, taxa_id is required, but its values are not compared with taxa_ref.csv in 3.1.0. When FALSE, taxa_id is optional and its presence triggers a warning suggesting taxa_ref.</li><li>When <code>dawkins = TRUE</code>, dawkins_code is required and checked against dawkins.csv. When FALSE, it is optional in the crownfile and is not checked if present.</li></ul></section><section id='en-6'><h2>6. param/tree_picture_zooms.csv</h2><p>Present only when tree_pictures = TRUE. Columns: sensor, zoom, zoom_type, effective_focal. Unique key: sensor/zoom/zoom_type. zoom starts with x followed by an integer without spaces. zoom_type is exactly native or digital. effective_focal is decimal; do not write the unit in the field. Every current or historical tree_pictures sensor has at least one zoom.</p><pre><code>sensor;zoom;zoom_type;effective_focal
+M3E;x14;digital;90.8
+M3E;x7;native;45.4
+M3E;x1;native;6.48</code></pre></section><section id='en-7'><h2>7. reference/contributors.csv</h2><p>Always required; one contributor column. Empty rows and duplicates are reported; Shiny removes them on save with a warning. A crownfile creator absent from this table produces a warning.</p><pre><code>contributor
+Nicolas Barbier
+Pierre Ploton
+Alex</code></pre></section><section id='en-8'><h2>8. reference/plots_list.csv</h2><p>Present when plots_list = TRUE. One plot_name column with unique, non-empty values without spaces. A file missing while enabled, present while disabled, or a crownfile plot_name absent from the table produces a warning.</p><pre><code>plot_name
+mbalmayo001
+mbalmayo002</code></pre></section><section id='en-9'><h2>9. param/dawkins_param.csv</h2><p>Present only when dawkins = TRUE. All 14 parameters are mandatory and ordered. The user changes only the value column. Every value is numeric; negative values are allowed and no relation between thresholds is enforced. They will later be used to calculate one of the reference/dawkins.csv classes; the assignment algorithm is not run in 3.1.0.</p><pre><code>param;value
+daw5_H_ratio;1.5
+daw5_ratio_mean;1.3
+daw3_H_ratio;1.1
+daw3_ratio_mean;1.0
+daw5b_ratio_min_strict;1.3
+daw5b_ratio_min_souple;1.1
+daw5b_slope_norm;-0.015
+daw4c_ratio_above1;0.88
+daw4c_ratio_cv;0.2
+daw4a_ratio_above1;0.62
+daw3c_openness;0.08
+daw3c_ratio_above1;0.38
+daw3a_ratio_above1;0.25
+daw3a_openness;-0.05</code></pre><p><code>reference/dawkins.csv</code> is generated at step 11:</p><pre><code>Dawkins
+3a - Some overhead light
+3b - Some overhead light
+3c - Lower canopy
+4a - Full overhead light
+4b - Full overhead light
+4c - Canopy
+5a - Emergent
+5b - Emergent</code></pre></section><section id='en-10'><h2>10. reference/taxa_ref.csv</h2><p>Present when taxa_ref = TRUE. The separator remains a semicolon, but columns and values are unrestricted. No content model is currently imposed in version 3.1.0 and no taxa_id value is compared. Absence when the parameter is TRUE or presence when it is FALSE produces a warning.</p><pre><code>taxon_id;scientific_name
+1289;Lophira alata</code></pre></section><section id='en-11'><h2>11. Automatically generated files</h2><div class='table-wrap'><table><thead><tr><th>File</th><th>Presence</th></tr></thead><tbody><tr><td>param/crownfile_vars.csv</td><td>Always; built from crownfile_type, plots_list, taxa_ref, and dawkins.</td></tr><tr><td>reference/dawkins.csv</td><td>When dawkins = TRUE.</td></tr><tr><td>reference/dbh_types.csv</td><td>Always.</td></tr><tr><td>reference/geom_modif.csv</td><td>When crownfile_type = dynamic and Geom_Modif is required in crownfile_vars.csv.</td></tr><tr><td>reference/lianas.csv</td><td>Always; values 0 and 1.</td></tr><tr><td>reference/tree_status.csv</td><td>When crownfile_type = dynamic.</td></tr><tr><td>reference/type_obs.csv</td><td>Always.</td></tr></tbody></table></div><p>These tables are produced by the application and are not editable. Any difference from their required model is blocking. The business-reference exceptions are contributors.csv and plots_list.csv, which produce warnings, and taxa_ref.csv, which is not checked.</p><h3>param/crownfile_vars.csv — example dynamic schema with every option enabled</h3><pre><code>layer;var_name;type;reference_tables;reference_layer;exemple
+geometry;site;chr;;;mba
+geometry;geom_id;integer PK;;;23
+geometry;id;integer FK;crowns.gpkg;infos;112
+geometry;date;date;;;20221125
+geometry;Tree_Status;chr FK;tree_status.csv;;Alive
+geometry;version;integer;;;2
+geometry;Geom_Modif;chr FK;geom_modif.csv;;Geometrical_Correction
+geometry;geometry;MULTIPOLYGON;;;NA
+infos;site;chr;;;mba
+infos;id;integer PK;;;112
+infos;tax_sp_level;chr;;;Lophira alata
+infos;tax_gen;chr;;;Lophira
+infos;tax_fam;chr;;;Ochnaceae
+infos;Type_Obs;chr FK;type_obs.csv;;Field
+infos;lianas;integer FK;lianas.csv;;0
+infos;comments;chr;;;
+infos;creator;chr FK;contributors.csv;;Alex
+infos;dbh;dbl;;;25.6
+infos;dbh_type;chr FK;dbh_types.csv;;measured
+infos;crown_area;dbl;;;741
+infos;plot_name;chr FK;plots_list.csv;;mbalmayo003
+infos;taxa_id;integer FK;taxa_ref.csv;;1289
+infos;dawkins_code;chr FK;dawkins.csv;;4c - Canopy</code></pre><h3>param/crownfile_vars.csv — example light schema without optional fields</h3><pre><code>layer;var_name;type;reference_tables;reference_layer;exemple
+crowns;site;chr;;;mba
+crowns;id;integer PK;;;112
+crowns;date;date;;;20221125
+crowns;geometry;MULTIPOLYGON;;;NA
+crowns;tax_sp_level;chr;;;Lophira alata
+crowns;tax_gen;chr;;;Lophira
+crowns;tax_fam;chr;;;Ochnaceae
+crowns;Type_Obs;chr FK;type_obs.csv;;Field
+crowns;lianas;integer FK;lianas.csv;;0
+crowns;comments;chr;;;
+crowns;creator;chr FK;contributors.csv;;Alex
+crowns;dbh;dbl;;;25.6
+crowns;dbh_type;chr FK;dbh_types.csv;;measured
+crowns;crown_area;dbl;;;741</code></pre><h3>reference/dawkins.csv</h3><pre><code>Dawkins
+3a - Some overhead light
+3b - Some overhead light
+3c - Lower canopy
+4a - Full overhead light
+4b - Full overhead light
+4c - Canopy
+5a - Emergent
+5b - Emergent</code></pre><h3>reference/dbh_types.csv</h3><pre><code>dbh_types
+estimated
+measured</code></pre><h3>reference/geom_modif.csv</h3><pre><code>Geom_Modif
+Initial
+Geometrical_Correction
+Geometrical_Change</code></pre><h3>reference/lianas.csv</h3><pre><code>lianas
+0
+1</code></pre><h3>reference/tree_status.csv</h3><pre><code>Tree_Status
+Alive
+Dead
+Fallen
+Missing
+Recruited</code></pre><h3>reference/type_obs.csv</h3><pre><code>Type_Obs
+Field
+Photo
+Remote_sensing</code></pre></section><section id='en-12'><h2>12. path/UAV_folder.csv</h2><div class='table-wrap'><table><thead><tr><th>Column</th><th>Meaning and requirement</th></tr></thead><tbody><tr><td>survey</td><td>Canonical survey.</td></tr><tr><td>product</td><td>Product allowed for that survey in product.csv.</td></tr><tr><td>server</td><td>Portable server alias; the local root is supplied only to operation 3.</td></tr><tr><td>path</td><td>Relative path below the server root; no absolute path or .. segment.</td></tr></tbody></table></div><p>Several locations are allowed for one survey/product pair, but survey/product/server/path is unique. A TRUE product without a location produces a warning. A retained location for a FALSE product produces a warning. Operation 1 checks the structure without testing the path.</p><pre><code>survey;product;server;path
+RGB;RGB_raw;safe;PhenOBS_Africa/Survols_RGB/Mbalmayo
+RGB;RGB_orthomosaic;work;shared/PhenOBS_Africa/Mbalmayo/ORTHO</code></pre></section><section id='en-13'><h2>13. path/UAV_file_patterns.csv</h2><div class='table-wrap'><table><thead><tr><th>Column</th><th>Meaning and requirement</th></tr></thead><tbody><tr><td>survey</td><td>Canonical protocol; forms an allowed pair with product.</td></tr><tr><td>product</td><td>Product declared in product.csv and, when a location exists, associated with the same pair in UAV_folder.csv.</td></tr><tr><td>directory_pattern</td><td>Pattern applied to immediate child directory names. Fill this column or filename_pattern, never both.</td></tr><tr><td>filename_pattern</td><td>Pattern applied to immediate child file names. Fill this column or directory_pattern, never both.</td></tr></tbody></table></div><p>This file defines <strong>how products are discovered below each configured location</strong>. The operation 3 scan is non-recursive: a directory_pattern identifies an immediate child directory as a product object; a filename_pattern identifies an immediate child file. A pattern acts on the immediate name only and cannot contain <code>/</code> or <code>\</code>. A survey/product pair occurs at most once. An active pair or a pair configured in UAV_folder.csv without a pattern produces a warning; a retained pattern for a FALSE product also produces a warning.</p>
+    <p>Every RGB, MS, or DLS pattern contains <strong>exactly one</strong> supported date placeholder. tree_pictures is exempt. Braces are balanced, names are case-sensitive, and a captured field can occur only once.</p><pre><code>survey;product;directory_pattern;filename_pattern
+RGB;RGB_raw;{product}__{date}__{sensor};
+RGB;RGB_orthomosaic;;{product}__{date}__{site}__ORTHO_aligned_local.tif
+RGB;RGB_DEM;;{product}__{date}__{site}.tif
+MS;MS_raw;{product}__{date}__{sensor};
+MS;MS_orthomosaic;;{product}__{date}__{site}__ORTHO_aligned_local.tif
+MS;MS_DEM;;{product}__{date}__{site}.tif
+DLS;DLS_raw;{product}__{date}__{sensor};
+DLS;DLS_CHM;;{product}__{date}__{sensor}.tif
+DLS;DLS_DTM;;{product}__{date}__{sensor}.tif
+tree_pictures;raw_tree_picture;{product}__{date}__{sensor};
+tree_pictures;sorted_tree_picture;ID__{crownfile.infos.id}__{crownfile.infos.tax_sp_level};</code></pre><h3>Supported placeholders</h3><div class='table-wrap'><table><thead><tr><th>Placeholder</th><th>Behaviour</th></tr></thead><tbody><tr><td>{product}</td><td>Fixed literal from the product column; not captured again.</td></tr><tr><td>{date}</td><td>Captured yyyymmdd date.</td></tr><tr><td>{date:%Y-%m-%d}</td><td>Captured YYYY-MM-DD date normalized to yyyymmdd.</td></tr><tr><td>{date:%Y_%m_%d}</td><td>Captured YYYY_MM_DD date normalized to yyyymmdd.</td></tr><tr><td>{sensor}</td><td>Captured sensor; compared with the survey and, when a date is captured, its inclusive period in sensor.csv.</td></tr><tr><td>{site}</td><td>Site text captured from the object name.</td></tr><tr><td><code>{site.&lt;param&gt;}</code></td><td>Fixed site.csv value, for example <code>{site.id_site}</code>; not captured.</td></tr><tr><td>{zoom}</td><td>Captured zoom; allowed only for tree_pictures.</td></tr><tr><td>{capture.picture_code}</td><td>Captured picture code.</td></tr><tr><td><code>{crownfile.&lt;layer&gt;.&lt;var_name&gt;}</code></td><td>Captured crown variable for a dynamic crownfile; layer and var_name must match crownfile_vars.csv.</td></tr><tr><td><code>{crownfile.&lt;var_name&gt;}</code></td><td>Captured crown variable for a light crownfile; var_name must match crownfile_vars.csv.</td></tr><tr><td>{original_name}</td><td>Captured original name.</td></tr><tr><td>{extension}</td><td>Captured extension.</td></tr><tr><td>* and ?</td><td>Wildcards for unconstrained text; no output column.</td></tr></tbody></table></div><h3>Explicit crown-value transformation</h3>
+    <pre><code>{crownfile.infos.tax_sp_level|space_to_hyphen}</code></pre>
+    <p>The <code>|space_to_hyphen</code> suffix declares that spaces were represented by hyphens in the object name. The convention turns <code>Lophira alata</code> into <code>Lophira-alata</code>; discovery restores spaces in the captured value. Review scientific names containing meaningful hyphens manually.</p><h3>Discovery result</h3><p>Every captured placeholder becomes a column in <code>all_products.csv</code>. The standard columns are always <code>survey</code>, <code>product</code>, <code>server</code>, <code>configured_path</code>, <code>relative_path</code>, <code>object_name</code>, and <code>object_type</code>. Absolute local server roots are never exported. The <code>exemple</code> column of crownfile_vars.csv documents representative crown values; discovery reads object names and never modifies scientific files.</p></section><section id='en-14'><h2>14. path/vectors.csv</h2><p>This section is still under construction. vectors.csv may be created empty or filled, but its contents are never read, checked, exported to observatory.yaml, or visualised.</p></section><section id='en-15'><h2>15. observatory.yaml and configuration reports</h2><div class='table-wrap'><table><thead><tr><th>Item</th><th>Rule</th></tr></thead><tbody><tr><td>Order</td><td>One section per CSV follows step order; the first property is path.</td></tr><tr><td>Conditional files</td><td>The section is always included with status: activated or status: non activated.</td></tr><tr><td>Exclusions</td><td>taxa_ref.csv and vectors.csv are not included.</td></tr><tr><td>HTML report</td><td>{site.name}_observatory_infos.html is bilingual, standalone, and offline. An optional table absent from the config folder is omitted. Name spaces become _, apostrophes are removed, and accents are forbidden in site.name.</td></tr><tr><td>site_check.txt</td><td>Groups warnings and errors in config order; files without diagnostics are omitted. Unassignable findings appear under GLOBAL.</td></tr><tr><td>Archive</td><td>Before a new valid publication, existing observatory.yaml and site_check.txt are moved to archive/ and renamed with before_yyyymmdd[_n].</td></tr><tr><td>Modification report</td><td>modification_yyyymmdd[_n].txt lists modified, created, and deleted files, their before/after contents, and their consequences. CSV contents are raw and directly copyable. Changes to observatory.yaml are placed after every other file; its before/after blocks are also raw and copyable. The fully derived site HTML report is never mentioned. The previous active report is moved to archive/ without renaming.</td></tr></tbody></table></div><pre><code>schema_version: 3.1.0
+date_format: yyyymmdd
+site:
+  path: config/param/site.csv
+  data: [...]
+tree_picture_zooms:
+  path: config/param/tree_picture_zooms.csv
+  status: non activated
+  data: []</code></pre></section><section id='en-a'><h2>A. Inventory files</h2><div class='table-wrap'><table><thead><tr><th>File</th><th>Purpose</th></tr></thead><tbody><tr><td>all_products.csv</td><td>Inventory written or updated on request after a successful connected check, including a check with warnings only.</td></tr><tr><td>products_check.txt</td><td>Diagnostics written automatically for every product-inventory scan and refreshed with all_products.csv.</td></tr><tr><td>site_check.txt</td><td>Configuration diagnostics grouped by file.</td></tr></tbody></table></div><p><code>compare_raw_processed()</code> returns one row per survey, date, and processed product. With <code>group_by_processed_status = TRUE</code>, it sums raw_count and processed_count for each processed_product/status pair. Status values are completed, missing_processed, and processed_without_raw. Shiny offers this comparison after a successful check; interactive tables have one filter per column.</p></section><section id='en-b'><h2>B. Required consistency between files</h2><div class='table-wrap'><table><thead><tr><th>Source</th><th>Required consistency</th></tr></thead><tbody><tr><td>survey → sensor</td><td>Every active survey has a sensor; FALSE surveys have no sensor row.</td></tr><tr><td>survey → product</td><td>Every catalog row exists; inactive surveys have only FALSE products; every active survey has a TRUE product.</td></tr><tr><td>product → UAV</td><td>Missing folder or pattern for an active product: warning; retained inactive mapping: warning.</td></tr><tr><td>survey → zooms</td><td>tree_pictures controls the zoom file; every tree_pictures sensor has at least one zoom.</td></tr><tr><td>crownfile_param → crownfile</td><td>server and path locate the file; crownfile_type, plots_list, taxa_ref, and dawkins determine its mandatory schema.</td></tr><tr><td>configuration → YAML/HTML</td><td>Every change requires publication again; no scientific data are modified.</td></tr><tr><td>dynamic → dates</td><td>When RGB and RGB_orthomosaic are active, crown dates are compared with observed orthomosaics; absence: warning.</td></tr></tbody></table></div></section><section id='en-c'><h2>C. Configuration evolution</h2><p>Shiny compares the published and candidate versions simultaneously; modified cells, deleted rows, and added rows are coloured. config_change_impacts() describes dependent files to create, fill, or check. In direct R use, operation2_modify_config(), preview_config_table_change(), and generate_config_outputs(before_snapshot = ...) provide the same information. After successful global validation, publication archives the previous observatory.yaml and site_check.txt, moves the active modification report into archive/ without renaming it, rebuilds outputs, and writes modification_yyyymmdd[_n].txt. Before/after CSV blocks remain raw. YAML blocks are also raw and grouped at the end; the derived HTML report is excluded from the log. The _2, _3, and later suffixes prevent same-day collisions. Scientific data are never modified.</p></section><section id='en-d'><h2>D. Reserved functions</h2><ul><li>The columns and semantics of vectors.csv are not defined; its contents are ignored.</li><li>taxa_ref.csv has no content model and taxa_id values are not compared in 3.1.0.</li><li>Dawkins parameters are stored and checked, but the class-assignment algorithm is not run.</li></ul></section></main>
+    </div></div><div id='fr-page' class='language-page' hidden>
+    <div class='guide-shell'>
+      <aside class='toc' aria-label='Sommaire'><h2>Sommaire</h2><a href='#fr-0'>0. Conventions générales</a><a href='#fr-1'>1. site.csv</a><a href='#fr-2'>2. survey.csv</a><a href='#fr-3'>3. sensor.csv</a><a href='#fr-4'>4. product.csv</a><a href='#fr-5'>5. crownfile_param.csv</a><a href='#fr-6'>6. tree_picture_zooms.csv</a><a href='#fr-7'>7. contributors.csv</a><a href='#fr-8'>8. plots_list.csv</a><a href='#fr-9'>9. dawkins_param.csv</a><a href='#fr-10'>10. taxa_ref.csv</a><a href='#fr-11'>11. Fichiers générés</a><a href='#fr-12'>12. UAV_folder.csv</a><a href='#fr-13'>13. UAV_file_patterns.csv</a><a href='#fr-14'>14. vectors.csv</a><a href='#fr-15'>15. YAML et rapports</a><a href='#fr-a'>A. Inventaire</a><a href='#fr-b'>B. Cohérence</a><a href='#fr-c'>C. Évolution</a><a href='#fr-d'>D. Réserves</a></aside>
+      <main><h1>Guide des fichiers de configuration</h1><p class='lede'>canObsR — schema 3.1.0</p><section id='fr-0'><h2>0. Conventions générales</h2><div class='table-wrap'><table><thead><tr><th>Élément</th><th>Exigence</th></tr></thead><tbody><tr><td>Version</td><td>3.1.0</td></tr><tr><td>Surveys canoniques</td><td>RGB, MS, DLS, tree_pictures dans survey.csv et dans tous les autres fichiers.</td></tr><tr><td>Booléens</td><td>TRUE ou FALSE, en majuscules et sans guillemets.</td></tr><tr><td>Date</td><td>Toutes les dates sont au format yyyymmdd.</td></tr><tr><td>Référence de placettes</td><td>plots_list et reference/plots_list.csv.</td></tr><tr><td>Référence taxonomique</td><td>reference/taxa_ref.csv.</td></tr><tr><td>Équivalence</td><td>Les contrôles Shiny et les contrôles de l’API R produisent les mêmes diagnostics.</td></tr></tbody></table></div><div class='table-wrap'><table><thead><tr><th>Niveau</th><th>Effet attendu</th></tr></thead><tbody><tr><td>Erreur bloquante</td><td>Empêche la sauvegarde du fichier courant ou la publication finale.</td></tr><tr><td>Warning</td><td>Est signalé sans bloquer la sauvegarde ou la publication.</td></tr></tbody></table></div><h3>0.1 Architecture cible du dossier config</h3><p>Les annotations entre crochets ne font pas partie des noms de fichiers.</p><pre><code>config/
+├── param/
+│   ├── site.csv                         [saisi]
+│   ├── survey.csv                       [saisi]
+│   ├── sensor.csv                       [saisi]
+│   ├── product.csv                      [saisi]
+│   ├── crownfile_param.csv              [saisi]
+│   ├── crownfile_vars.csv               [généré]
+│   ├── tree_picture_zooms.csv           [saisi, conditionnel]
+│   └── dawkins_param.csv                [saisi, conditionnel]
+├── reference/
+│   ├── contributors.csv                 [saisi]
+│   ├── plots_list.csv                   [saisi, conditionnel]
+│   ├── taxa_ref.csv                     [saisi, conditionnel, non contrôlé]
+│   ├── dawkins.csv                      [généré, conditionnel]
+│   ├── dbh_types.csv                    [généré]
+│   ├── geom_modif.csv                   [généré, conditionnel]
+│   ├── lianas.csv                       [généré]
+│   ├── tree_status.csv                  [généré, conditionnel]
+│   └── type_obs.csv                     [généré]
+├── path/
+│   ├── UAV_folder.csv                   [saisi]
+│   ├── UAV_file_patterns.csv            [saisi]
+│   └── vectors.csv                      [saisi, ignoré]
+├── archive/                              [fichiers des publications précédentes]
+│   ├── observatory_before_yyyymmdd[_n].yaml
+│   ├── site_check_before_yyyymmdd[_n].txt
+│   └── modification_yyyymmdd[_n].txt
+├── observatory.yaml                     [généré à la fin, non connecté aux données]
+├── modification_yyyymmdd[_n].txt        [généré à la publication]
+├── all_products.csv                     [généré plus tard, connecté aux données]
+├── products_check.txt                   [généré plus tard, connecté aux données]
+├── {site.name}_observatory_infos.html   [généré à la fin, non connecté aux données]
+└── site_check.txt                       [généré à la fin, non connecté aux données]</code></pre><h3>0.2 Workflow général de création et de validation</h3><div class='table-wrap'><table><thead><tr><th>Ordre</th><th>Étape</th><th>Condition</th></tr></thead><tbody><tr><td>1</td><td>param/site.csv</td><td>Toujours</td></tr><tr><td>2</td><td>param/survey.csv</td><td>Toujours</td></tr><tr><td>3</td><td>param/sensor.csv</td><td>Toujours</td></tr><tr><td>4</td><td>param/product.csv</td><td>Toujours</td></tr><tr><td>5</td><td>param/crownfile_param.csv</td><td>Toujours</td></tr><tr><td>6</td><td>param/tree_picture_zooms.csv</td><td>tree_pictures = TRUE</td></tr><tr><td>7</td><td>reference/contributors.csv</td><td>Toujours</td></tr><tr><td>8</td><td>reference/plots_list.csv</td><td>plots_list = TRUE</td></tr><tr><td>9</td><td>param/dawkins_param.csv</td><td>dawkins = TRUE</td></tr><tr><td>10</td><td>reference/taxa_ref.csv</td><td>taxa_ref = TRUE</td></tr><tr><td>11</td><td>Fichiers générés</td><td>Après les références saisies par l’utilisateur</td></tr><tr><td>12</td><td>path/UAV_folder.csv</td><td>Toujours</td></tr><tr><td>13</td><td>path/UAV_file_patterns.csv</td><td>Toujours</td></tr><tr><td>14</td><td>path/vectors.csv</td><td>Peut être vide ; ignoré par la pipeline</td></tr><tr><td>15</td><td>observatory.yaml et rapport HTML du site</td><td>Après le contrôle global de configuration</td></tr></tbody></table></div>
+    <p>L’opération 1 commence par créer uniquement <code>config/param</code>, <code>config/reference</code> et
+    <code>config/path</code>. Aucun CSV n’est créé à ce stade. À chaque étape, le tableau est immédiatement
+    modifiable. L’import d’un CSV ou d’un fichier Excel remplace le brouillon affiché, qui reste modifiable.
+    Le fichier est écrit uniquement après la réussite de <strong>Validate and save</strong> ; le bouton
+    <strong>Next file</strong> ouvre alors l’étape applicable suivante.</p>
+    <p>L’opération 2 charge une configuration existante. Le tableau publié et le tableau candidat sont affichés
+    côte à côte. Les cellules modifiées, les lignes supprimées et les lignes ajoutées ont des couleurs distinctes.
+    Une fenêtre sous les tableaux décrit les conséquences pour les autres fichiers de configuration et les futurs
+    contrôles de données.</p>
+    <p>Chaque sauvegarde contrôle le fichier courant et sa cohérence avec les fichiers déjà validés. L’étape 15
+    exécute le contrôle global limité à la configuration. Après sa réussite, le YAML et le contrôle de site
+    précédents sont déplacés dans <code>archive/</code>, un rapport daté conserve les contenus avant/après, puis
+    tous les rapports dérivés sont reconstruits. Plusieurs publications le même jour utilisent les suffixes
+    <code>_2</code>, <code>_3</code>, etc. L’opération 1 ne
+    teste aucun chemin configuré, n’ouvre aucune donnée scientifique et ne nécessite aucun serveur. Dans
+    l’opération 3, Shiny lit les alias déclarés dans crownfile_param.csv et UAV_folder.csv et affiche un champ de
+    racine locale pour chacun. L’opération 3 résout le crownfile depuis ces correspondances et applique le verrou
+    de publication avant les contrôles de données scientifiques. La colonne géométrique sf de chaque couche
+    GeoPackage ouverte est immédiatement renommée <code>geometry</code>, y compris lorsqu’elle est stockée sous
+    le nom <code>geom</code>. Le scan des produits écrit toujours <code>products_check.txt</code>. Un contrôle
+    réussi affiche <strong>PASS</strong> ou <strong>PASS WITH WARNINGS</strong> et active
+    <strong>Generate or update all_products.csv</strong>, ainsi qu’une comparaison raw/processed détaillée ou
+    regroupée. Les quatre opérations — <strong>Generate the config folder</strong>,
+    <strong>Modify the config folder</strong>, <strong>Check parameters and data</strong> et
+    <strong>Visualise parameters and data</strong> — sont disponibles dans Shiny et par appels R directs.</p></section><section id='fr-1'><h2>1. param/site.csv</h2><div class='table-wrap'><table><thead><tr><th>Champ</th><th>Exigence</th></tr></thead><tbody><tr><td>param</td><td>Valeurs exactes et ordonnées : id_site, name, location, crs. Aucune ligne supplémentaire.</td></tr><tr><td>id_site</td><td>Obligatoire ; lettres ASCII, chiffres, underscore, tiret et point uniquement. Aucun espace.</td></tr><tr><td>name</td><td>Obligatoire ; espaces permis ; caractères accentués interdits.</td></tr><tr><td>location</td><td>Obligatoire ; espaces permis ; caractères accentués interdits.</td></tr><tr><td>crs</td><td>CRS obligatoire reconnu par sf, par exemple EPSG:32632.</td></tr><tr><td>Placeholders</td><td>Utiliser <code>{site.&lt;param&gt;}</code> ; voir l’étape 13.</td></tr></tbody></table></div><pre><code>param;site_value
+id_site;mba
+name;Mbalmayo
+location;Cameroon
+crs;EPSG:32632</code></pre></section><section id='fr-2'><h2>2. param/survey.csv</h2><div class='table-wrap'><table><thead><tr><th>Champ</th><th>Exigence</th></tr></thead><tbody><tr><td>survey</td><td>Exactement RGB, MS, DLS et tree_pictures, une fois chacun. Les quatre lignes sont toujours présentes ; ordre libre.</td></tr><tr><td>status</td><td>TRUE ou FALSE. Au moins un survey est TRUE. Un survey désactivé reste présent avec FALSE.</td></tr></tbody></table></div><pre><code>survey;status
+RGB;TRUE
+MS;FALSE
+DLS;FALSE
+tree_pictures;FALSE</code></pre></section><section id='fr-3'><h2>3. param/sensor.csv</h2><ul>
+    <li>Colonnes exactes : <code>sensor;survey;start_date;end_date;status</code>.</li>
+    <li>Clé unique : <code>sensor/survey/start_date</code>.</li>
+    <li>Dates au format yyyymmdd ; périodes inclusives. Aucun chevauchement au sein d’un même survey, y compris entre deux périodes du même sensor. Les trous et <code>end_date = start_date</code> sont autorisés.</li>
+    <li><code>active</code> impose une end_date vide et représente une période ouverte jusqu’à aujourd’hui. <code>not active</code> impose une end_date supérieure ou égale à start_date.</li>
+    <li>Un sensor peut couvrir plusieurs surveys. Une ligne pour un survey FALSE ou un survey actif sans aucun sensor est bloquante. Un survey actif possédant seulement des sensors historiques produit un warning.</li>
+    </ul><pre><code>sensor;survey;start_date;end_date;status
+Mavic2;RGB;20220730;;active</code></pre></section><section id='fr-4'><h2>4. param/product.csv</h2><p>Le catalogue canonique contient 17 couples survey/product. Dans l’éditeur Shiny de l’opération 1, seules les lignes des surveys ayant status TRUE sont affichées ; l’exemple ci-dessous correspond donc à RGB seul. Lors de la sauvegarde, les lignes masquées des surveys FALSE sont conservées automatiquement avec status FALSE afin que product.csv reste un fichier canonique complet. Pour chaque survey actif, tous ses produits sont présents : au moins un vaut TRUE, un produit FALSE produit un warning et un produit dérivé TRUE avec son produit raw FALSE est bloquant.</p><pre><code>survey;product;status
+RGB;RGB_raw;TRUE
+RGB;RGB_orthomosaic;TRUE
+RGB;RGB_DEM;FALSE
+RGB;RGB_vignette;FALSE
+RGB;RGB_indices;FALSE
+RGB;RGB_phenophase;FALSE</code></pre></section><section id='fr-5'><h2>5. param/crownfile_param.csv</h2><div class='table-wrap'><table><thead><tr><th>Paramètre</th><th>Valeur et conséquence</th></tr></thead><tbody><tr><td>path</td><td>Chemin relatif depuis la racine du serveur jusqu’au crownfile. Les chemins absolus et les segments .. sont interdits.</td></tr><tr><td>server</td><td>Alias portable du serveur contenant le crownfile. Sa racine locale est fournie à l’opération 3 et n’est jamais écrite dans config/.</td></tr><tr><td>crownfile_type</td><td>dynamic ou light.</td></tr><tr><td>plots_list</td><td>TRUE/FALSE ; contrôle la présence de reference/plots_list.csv et l’obligation de plot_name.</td></tr><tr><td>taxa_ref</td><td>TRUE/FALSE ; contrôle la présence de reference/taxa_ref.csv et l’obligation de taxa_id.</td></tr><tr><td>dawkins</td><td>TRUE/FALSE ; contrôle dawkins_param.csv, dawkins.csv et l’obligation de dawkins_code.</td></tr></tbody></table></div><pre><code>param;value
+path;observatories/mbalmayo/crowns.gpkg
+server;work
+crownfile_type;dynamic
+plots_list;TRUE
+taxa_ref;FALSE
+dawkins;TRUE</code></pre><ul><li>Le crownfile est toujours un fichier GeoPackage portant l’extension <code>.gpkg</code>.</li><li><code>dynamic</code> exige les couches geometry et infos ainsi que les variables <code>Tree_Status</code> et <code>Geom_Modif</code> dans geometry.</li><li><code>light</code> contient exactement une couche spatiale appelée <code>crowns</code> et n’exige pas ces deux variables. Toutes les lignes de crownfile_vars.csv portent alors <code>layer = crowns</code>.</li><li>Si <code>plots_list = TRUE</code>, un plot_name absent de plots_list.csv produit un warning.</li><li>Si <code>taxa_ref = TRUE</code>, taxa_id est obligatoire, mais ses valeurs ne sont pas comparées à taxa_ref.csv dans la 3.1.0. Si FALSE, taxa_id est facultatif et sa présence suggère, par warning, d’activer taxa_ref.</li><li>Si <code>dawkins = TRUE</code>, dawkins_code est obligatoire et contrôlé par dawkins.csv. Si FALSE, il est facultatif dans le crownfile et n’est pas contrôlé s’il est présent.</li></ul></section><section id='fr-6'><h2>6. param/tree_picture_zooms.csv</h2><p>Présent uniquement si tree_pictures = TRUE. Colonnes : sensor, zoom, zoom_type, effective_focal. Clé unique sensor/zoom/zoom_type. zoom commence par x suivi d’un entier sans espace. zoom_type vaut exactement native ou digital. effective_focal est un nombre décimal ; ne pas écrire l’unité dans le champ. Chaque sensor tree_pictures actuel ou historique possède au moins un zoom.</p><pre><code>sensor;zoom;zoom_type;effective_focal
+M3E;x14;digital;90.8
+M3E;x7;native;45.4
+M3E;x1;native;6.48</code></pre></section><section id='fr-7'><h2>7. reference/contributors.csv</h2><p>Toujours obligatoire ; une seule colonne contributor. Les lignes vides et les doublons sont signalés ; Shiny les retire lors de la sauvegarde avec un warning. Une valeur creator du crownfile absente de cette table produit un warning.</p><pre><code>contributor
+Nicolas Barbier
+Pierre Ploton
+Alex</code></pre></section><section id='fr-8'><h2>8. reference/plots_list.csv</h2><p>Présent lorsque plots_list = TRUE. Une seule colonne plot_name, avec des valeurs uniques, non vides et sans espace. Un fichier manquant alors qu’il est activé, présent alors qu’il est désactivé, ou un plot_name du crownfile absent de la table produit un warning.</p><pre><code>plot_name
+mbalmayo001
+mbalmayo002</code></pre></section><section id='fr-9'><h2>9. param/dawkins_param.csv</h2><p>Présent uniquement si dawkins = TRUE. Les 14 paramètres sont obligatoires et ordonnés. L’utilisateur modifie uniquement la colonne value. Toutes les valeurs sont numériques ; les valeurs négatives sont permises et aucune relation entre seuils n’est imposée. Elles serviront ultérieurement au calcul d’une des classes de reference/dawkins.csv ; l’algorithme d’attribution n’est pas exécuté dans la 3.1.0.</p><pre><code>param;value
+daw5_H_ratio;1.5
+daw5_ratio_mean;1.3
+daw3_H_ratio;1.1
+daw3_ratio_mean;1.0
+daw5b_ratio_min_strict;1.3
+daw5b_ratio_min_souple;1.1
+daw5b_slope_norm;-0.015
+daw4c_ratio_above1;0.88
+daw4c_ratio_cv;0.2
+daw4a_ratio_above1;0.62
+daw3c_openness;0.08
+daw3c_ratio_above1;0.38
+daw3a_ratio_above1;0.25
+daw3a_openness;-0.05</code></pre><p><code>reference/dawkins.csv</code> est généré à l’étape 11 :</p><pre><code>Dawkins
+3a - Some overhead light
+3b - Some overhead light
+3c - Lower canopy
+4a - Full overhead light
+4b - Full overhead light
+4c - Canopy
+5a - Emergent
+5b - Emergent</code></pre></section><section id='fr-10'><h2>10. reference/taxa_ref.csv</h2><p>Présent lorsque taxa_ref = TRUE. Le séparateur reste le point-virgule, mais les colonnes et valeurs sont libres. Aucun modèle de contenu n’est imposé actuellement dans la version 3.1.0 et aucune valeur taxa_id n’est comparée. L’absence lorsque le paramètre vaut TRUE ou la présence lorsqu’il vaut FALSE produit un warning.</p><pre><code>taxon_id;scientific_name
+1289;Lophira alata</code></pre></section><section id='fr-11'><h2>11. Fichiers générés automatiquement</h2><div class='table-wrap'><table><thead><tr><th>Fichier</th><th>Présence</th></tr></thead><tbody><tr><td>param/crownfile_vars.csv</td><td>Toujours ; construit depuis crownfile_type, plots_list, taxa_ref et dawkins.</td></tr><tr><td>reference/dawkins.csv</td><td>Si dawkins = TRUE.</td></tr><tr><td>reference/dbh_types.csv</td><td>Toujours.</td></tr><tr><td>reference/geom_modif.csv</td><td>Si crownfile_type = dynamic, lorsque Geom_Modif est exigée dans crownfile_vars.csv.</td></tr><tr><td>reference/lianas.csv</td><td>Toujours ; valeurs 0 et 1.</td></tr><tr><td>reference/tree_status.csv</td><td>Si crownfile_type = dynamic.</td></tr><tr><td>reference/type_obs.csv</td><td>Toujours.</td></tr></tbody></table></div><p>Ces tables sont produites par l’application et ne sont pas éditables. Toute différence avec leur modèle exigé est bloquante. Les exceptions de correspondance métier sont contributors.csv et plots_list.csv, qui produisent des warnings, ainsi que taxa_ref.csv, qui n’est pas contrôlé.</p><h3>param/crownfile_vars.csv — exemple dynamic avec toutes les options activées</h3><pre><code>layer;var_name;type;reference_tables;reference_layer;exemple
+geometry;site;chr;;;mba
+geometry;geom_id;integer PK;;;23
+geometry;id;integer FK;crowns.gpkg;infos;112
+geometry;date;date;;;20221125
+geometry;Tree_Status;chr FK;tree_status.csv;;Alive
+geometry;version;integer;;;2
+geometry;Geom_Modif;chr FK;geom_modif.csv;;Geometrical_Correction
+geometry;geometry;MULTIPOLYGON;;;NA
+infos;site;chr;;;mba
+infos;id;integer PK;;;112
+infos;tax_sp_level;chr;;;Lophira alata
+infos;tax_gen;chr;;;Lophira
+infos;tax_fam;chr;;;Ochnaceae
+infos;Type_Obs;chr FK;type_obs.csv;;Field
+infos;lianas;integer FK;lianas.csv;;0
+infos;comments;chr;;;
+infos;creator;chr FK;contributors.csv;;Alex
+infos;dbh;dbl;;;25.6
+infos;dbh_type;chr FK;dbh_types.csv;;measured
+infos;crown_area;dbl;;;741
+infos;plot_name;chr FK;plots_list.csv;;mbalmayo003
+infos;taxa_id;integer FK;taxa_ref.csv;;1289
+infos;dawkins_code;chr FK;dawkins.csv;;4c - Canopy</code></pre><h3>param/crownfile_vars.csv — example light schema without optional fields</h3><pre><code>layer;var_name;type;reference_tables;reference_layer;exemple
+crowns;site;chr;;;mba
+crowns;id;integer PK;;;112
+crowns;date;date;;;20221125
+crowns;geometry;MULTIPOLYGON;;;NA
+crowns;tax_sp_level;chr;;;Lophira alata
+crowns;tax_gen;chr;;;Lophira
+crowns;tax_fam;chr;;;Ochnaceae
+crowns;Type_Obs;chr FK;type_obs.csv;;Field
+crowns;lianas;integer FK;lianas.csv;;0
+crowns;comments;chr;;;
+crowns;creator;chr FK;contributors.csv;;Alex
+crowns;dbh;dbl;;;25.6
+crowns;dbh_type;chr FK;dbh_types.csv;;measured
+crowns;crown_area;dbl;;;741</code></pre><h3>reference/dawkins.csv</h3><pre><code>Dawkins
+3a - Some overhead light
+3b - Some overhead light
+3c - Lower canopy
+4a - Full overhead light
+4b - Full overhead light
+4c - Canopy
+5a - Emergent
+5b - Emergent</code></pre><h3>reference/dbh_types.csv</h3><pre><code>dbh_types
+estimated
+measured</code></pre><h3>reference/geom_modif.csv</h3><pre><code>Geom_Modif
+Initial
+Geometrical_Correction
+Geometrical_Change</code></pre><h3>reference/lianas.csv</h3><pre><code>lianas
+0
+1</code></pre><h3>reference/tree_status.csv</h3><pre><code>Tree_Status
+Alive
+Dead
+Fallen
+Missing
+Recruited</code></pre><h3>reference/type_obs.csv</h3><pre><code>Type_Obs
+Field
+Photo
+Remote_sensing</code></pre></section><section id='fr-12'><h2>12. path/UAV_folder.csv</h2><div class='table-wrap'><table><thead><tr><th>Colonne</th><th>Signification et exigence</th></tr></thead><tbody><tr><td>survey</td><td>Survey canonique.</td></tr><tr><td>product</td><td>Produit autorisé pour ce survey dans product.csv.</td></tr><tr><td>server</td><td>Alias portable du serveur ; le chemin racine local est fourni seulement à l’opération 3.</td></tr><tr><td>path</td><td>Chemin relatif sous la racine du serveur ; aucun chemin absolu ni segment ..</td></tr></tbody></table></div><p>Plusieurs emplacements sont autorisés pour un même couple survey/product, mais le quadruplet survey/product/server/path est unique. Un produit TRUE sans emplacement produit un warning. Un emplacement conservé pour un produit FALSE produit un warning. L’opération 1 vérifie la structure sans tester le chemin.</p><pre><code>survey;product;server;path
+RGB;RGB_raw;safe;PhenOBS_Africa/Survols_RGB/Mbalmayo
+RGB;RGB_orthomosaic;work;shared/PhenOBS_Africa/Mbalmayo/ORTHO</code></pre></section><section id='fr-13'><h2>13. path/UAV_file_patterns.csv</h2><div class='table-wrap'><table><thead><tr><th>Colonne</th><th>Signification et exigence</th></tr></thead><tbody><tr><td>survey</td><td>Protocole canonique ; forme un couple autorisé avec product.</td></tr><tr><td>product</td><td>Produit déclaré dans product.csv et, lorsqu’un emplacement existe, associé au même couple dans UAV_folder.csv.</td></tr><tr><td>directory_pattern</td><td>Pattern appliqué aux noms des sous-dossiers immédiats. Remplir cette colonne ou filename_pattern, jamais les deux.</td></tr><tr><td>filename_pattern</td><td>Pattern appliqué aux noms des fichiers immédiats. Remplir cette colonne ou directory_pattern, jamais les deux.</td></tr></tbody></table></div><p>Ce fichier décrit <strong>comment les produits sont découverts sous chaque emplacement</strong>. Le scan de l’opération 3 est non récursif : un directory_pattern identifie un sous-dossier comme objet produit ; un filename_pattern identifie un fichier. Un pattern agit uniquement sur le nom immédiat et ne peut contenir ni <code>/</code> ni <code>\</code>. Un couple survey/product apparaît au maximum une fois. Un couple actif ou configuré dans UAV_folder.csv sans pattern produit un warning ; un pattern conservé pour un produit FALSE produit aussi un warning.</p>
+    <p>Chaque pattern RGB, MS ou DLS contient <strong>exactement un</strong> placeholder de date pris en charge. tree_pictures en est exempt. Les accolades sont équilibrées, les noms sont sensibles à la casse et un champ capturé ne peut apparaître qu’une fois.</p><pre><code>survey;product;directory_pattern;filename_pattern
+RGB;RGB_raw;{product}__{date}__{sensor};
+RGB;RGB_orthomosaic;;{product}__{date}__{site}__ORTHO_aligned_local.tif
+RGB;RGB_DEM;;{product}__{date}__{site}.tif
+MS;MS_raw;{product}__{date}__{sensor};
+MS;MS_orthomosaic;;{product}__{date}__{site}__ORTHO_aligned_local.tif
+MS;MS_DEM;;{product}__{date}__{site}.tif
+DLS;DLS_raw;{product}__{date}__{sensor};
+DLS;DLS_CHM;;{product}__{date}__{sensor}.tif
+DLS;DLS_DTM;;{product}__{date}__{sensor}.tif
+tree_pictures;raw_tree_picture;{product}__{date}__{sensor};
+tree_pictures;sorted_tree_picture;ID__{crownfile.infos.id}__{crownfile.infos.tax_sp_level};</code></pre><h3>Placeholders pris en charge</h3><div class='table-wrap'><table><thead><tr><th>Placeholder</th><th>Comportement</th></tr></thead><tbody><tr><td>{product}</td><td>Littéral fixe pris dans la colonne product ; non recapturé.</td></tr><tr><td>{date}</td><td>Date capturée yyyymmdd.</td></tr><tr><td>{date:%Y-%m-%d}</td><td>Date capturée YYYY-MM-DD puis normalisée en yyyymmdd.</td></tr><tr><td>{date:%Y_%m_%d}</td><td>Date capturée YYYY_MM_DD puis normalisée en yyyymmdd.</td></tr><tr><td>{sensor}</td><td>Sensor capturé ; comparé au survey et, si une date est capturée, à sa période inclusive dans sensor.csv.</td></tr><tr><td>{site}</td><td>Texte du site capturé depuis le nom de l’objet.</td></tr><tr><td><code>{site.&lt;param&gt;}</code></td><td>Valeur fixe de site.csv, par exemple <code>{site.id_site}</code> ; non capturée.</td></tr><tr><td>{zoom}</td><td>Zoom capturé ; autorisé uniquement pour tree_pictures.</td></tr><tr><td>{capture.picture_code}</td><td>Code de prise de vue capturé.</td></tr><tr><td><code>{crownfile.&lt;layer&gt;.&lt;var_name&gt;}</code></td><td>Variable crown capturée pour un crownfile dynamic ; layer et var_name doivent correspondre à crownfile_vars.csv.</td></tr><tr><td><code>{crownfile.&lt;var_name&gt;}</code></td><td>Variable crown capturée pour un crownfile light ; var_name doit correspondre à crownfile_vars.csv.</td></tr><tr><td>{original_name}</td><td>Nom d’origine capturé.</td></tr><tr><td>{extension}</td><td>Extension capturée.</td></tr><tr><td>* et ?</td><td>Jokers pour du texte libre ; aucune colonne créée.</td></tr></tbody></table></div><h3>Transformation explicite d’une valeur crown</h3>
+    <pre><code>{crownfile.infos.tax_sp_level|space_to_hyphen}</code></pre>
+    <p>Le suffixe <code>|space_to_hyphen</code> indique que les espaces ont été remplacés par des tirets dans le nom de l’objet. La convention transforme par exemple <code>Lophira alata</code> en <code>Lophira-alata</code> ; la découverte restitue les espaces dans la valeur capturée. Vérifier manuellement les noms scientifiques contenant des tirets significatifs.</p><h3>Résultat de la découverte</h3><p>Chaque placeholder capturé devient une colonne de <code>all_products.csv</code>. Les colonnes standard sont toujours <code>survey</code>, <code>product</code>, <code>server</code>, <code>configured_path</code>, <code>relative_path</code>, <code>object_name</code> et <code>object_type</code>. Les racines absolues locales des serveurs ne sont jamais exportées. La colonne <code>exemple</code> de crownfile_vars.csv documente des valeurs crown représentatives ; la découverte lit les noms d’objets et ne modifie aucun fichier scientifique.</p></section><section id='fr-14'><h2>14. path/vectors.csv</h2><p>Cette section est encore en cours de construction. vectors.csv peut être créé vide ou rempli, mais son contenu n’est jamais lu, contrôlé, exporté dans observatory.yaml ou visualisé.</p></section><section id='fr-15'><h2>15. observatory.yaml et rapports de configuration</h2><div class='table-wrap'><table><thead><tr><th>Élément</th><th>Règle</th></tr></thead><tbody><tr><td>Ordre</td><td>Une section par CSV suit l’ordre des étapes ; la première propriété est path.</td></tr><tr><td>Fichiers conditionnels</td><td>La section est toujours incluse avec status: activated ou status: non activated.</td></tr><tr><td>Exclusions</td><td>taxa_ref.csv et vectors.csv ne sont pas inclus.</td></tr><tr><td>Rapport HTML</td><td>{site.name}_observatory_infos.html est bilingue, autonome et hors ligne. Un tableau optionnel absent du dossier config n’y apparaît pas. Les espaces du nom deviennent _, les apostrophes sont supprimées et les accents sont interdits dans site.name.</td></tr><tr><td>site_check.txt</td><td>Regroupe warnings et erreurs dans l’ordre du dossier config ; un fichier sans diagnostic est omis. Les constats non attribuables figurent sous GLOBAL.</td></tr><tr><td>Archive</td><td>Avant une nouvelle publication valide, observatory.yaml et site_check.txt existants sont déplacés dans archive/ et renommés avec before_yyyymmdd[_n].</td></tr><tr><td>Rapport de modification</td><td>modification_yyyymmdd[_n].txt liste les fichiers modifiés, créés et supprimés, leurs contenus avant/après et leurs conséquences. Les contenus CSV sont bruts et directement copiables. Les modifications de observatory.yaml sont placées après tous les autres fichiers ; ses blocs avant/après sont également bruts et copiables. Le rapport HTML du site, entièrement dérivé, n’est jamais mentionné. Le rapport actif précédent est déplacé dans archive/ sans être renommé.</td></tr></tbody></table></div><pre><code>schema_version: 3.1.0
+date_format: yyyymmdd
+site:
+  path: config/param/site.csv
+  data: [...]
+tree_picture_zooms:
+  path: config/param/tree_picture_zooms.csv
+  status: non activated
+  data: []</code></pre></section><section id='fr-a'><h2>A. Fichiers d’inventaire</h2><div class='table-wrap'><table><thead><tr><th>Fichier</th><th>Rôle</th></tr></thead><tbody><tr><td>all_products.csv</td><td>Inventaire écrit ou actualisé sur demande après un contrôle connecté réussi, même si celui-ci contient uniquement des warnings.</td></tr><tr><td>products_check.txt</td><td>Diagnostics écrits automatiquement à chaque scan de l’inventaire des produits puis actualisés avec all_products.csv.</td></tr><tr><td>site_check.txt</td><td>Diagnostics de configuration regroupés par fichier.</td></tr></tbody></table></div><p><code>compare_raw_processed()</code> produit une ligne par survey, date et produit traité. Avec <code>group_by_processed_status = TRUE</code>, il additionne raw_count et processed_count pour chaque couple processed_product/status. Les statuts sont completed, missing_processed et processed_without_raw. Dans Shiny, cette comparaison est proposée après un contrôle réussi ; les tableaux interactifs possèdent un filtre par colonne.</p></section><section id='fr-b'><h2>B. Cohérence exigée entre les fichiers</h2><div class='table-wrap'><table><thead><tr><th>Source</th><th>Cohérence exigée</th></tr></thead><tbody><tr><td>survey → sensor</td><td>Chaque survey actif a un sensor ; aucun sensor pour un survey FALSE.</td></tr><tr><td>survey → product</td><td>Toutes les lignes du catalogue existent ; surveys inactifs uniquement FALSE ; chaque survey actif a un produit TRUE.</td></tr><tr><td>product → UAV</td><td>Dossier ou pattern manquant pour un produit actif : warning ; mapping inactif conservé : warning.</td></tr><tr><td>survey → zooms</td><td>tree_pictures contrôle le fichier de zoom ; chaque sensor tree_pictures a au moins un zoom.</td></tr><tr><td>crownfile_param → crownfile</td><td>server et path localisent le fichier ; crownfile_type, plots_list, taxa_ref et dawkins déterminent son schéma obligatoire.</td></tr><tr><td>configuration → YAML/HTML</td><td>Toute modification impose une nouvelle publication ; aucune donnée scientifique n’est modifiée.</td></tr><tr><td>dynamic → dates</td><td>Si RGB et RGB_orthomosaic sont actifs, les dates du crownfile sont comparées aux orthomosaïques observées ; absence : warning.</td></tr></tbody></table></div></section><section id='fr-c'><h2>C. Évolution d’une configuration</h2><p>Shiny compare simultanément la version publiée et la version candidate ; les cellules modifiées, lignes supprimées et lignes ajoutées sont colorées. config_change_impacts() décrit les fichiers dépendants à créer, remplir ou vérifier. En R direct, operation2_modify_config(), preview_config_table_change() et generate_config_outputs(before_snapshot = ...) fournissent les mêmes informations. Après une validation globale réussie, la publication archive les anciens observatory.yaml et site_check.txt, déplace le rapport de modification actif dans archive/ sans le renommer, reconstruit les sorties et écrit modification_yyyymmdd[_n].txt. Les blocs CSV avant/après restent bruts. Les blocs YAML, également bruts, sont regroupés à la fin ; le rapport HTML dérivé est exclu du journal. Les suffixes _2, _3, etc. empêchent toute collision le même jour. Aucune donnée scientifique n’est modifiée.</p></section><section id='fr-d'><h2>D. Fonctionnalités réservées</h2><ul><li>Les colonnes et la sémantique de vectors.csv ne sont pas définies ; son contenu est ignoré.</li><li>taxa_ref.csv n’a pas de modèle de contenu et les valeurs taxa_id ne sont pas comparées dans la 3.1.0.</li><li>Les paramètres Dawkins sont stockés et contrôlés, mais l’algorithme d’attribution des classes n’est pas exécuté.</li></ul></section></main>
+    </div></div>
+<script>
+(function(){
+  var button=document.getElementById('language');
+  var en=document.getElementById('en-page');
+  var fr=document.getElementById('fr-page');
+  function show(language){
+    var french=language==='fr';
+    en.hidden=french; fr.hidden=!french;
+    document.documentElement.lang=french?'fr':'en';
+    button.textContent=french?'English':'Français';
+    try{localStorage.setItem('canobs-guide-language',french?'fr':'en')}catch(e){}
+  }
+  button.addEventListener('click',function(){show(document.documentElement.lang==='fr'?'en':'fr')});
+  var saved='en'; try{saved=localStorage.getItem('canobs-guide-language')||'en'}catch(e){}
+  show(saved==='fr'?'fr':'en');
+})();
+</script></body></html>
