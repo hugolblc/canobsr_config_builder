@@ -1,0 +1,44 @@
+# R and RStudio
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj.user
+
+# Local environments and package caches
+.Renviron
+.env
+.env.*
+renv/library/
+renv/staging/
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local runs and scientific data
+/config/
+/data/
+/local/
+/tmp/
+*.gpkg
+*.sqlite
+
+# Generated archives and transient reports
+*.zip
+all_products.csv
+products_check.txt
+site_check.txt
+modification_*.txt
+*_observatory_infos.html
+
+# Logs and test artefacts
+*.log
+.coverage/
+testthat.Rout*
+__pycache__/
+*.py[cod]
