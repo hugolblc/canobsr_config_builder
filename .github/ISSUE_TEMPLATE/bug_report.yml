@@ -1,0 +1,45 @@
+name: Bug report
+description: Report reproducible incorrect behaviour in Shiny or the R API
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Operation
+      options:
+        - 1 — Generate the config folder
+        - 2 — Modify the config folder
+        - 3 — Check parameters and data
+        - 4 — Visualise parameters and data
+        - Documentation or installation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Use anonymised sample values. Never attach credentials or confidential scientific data.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Diagnostic output
+      description: Paste the complete error or warning after removing sensitive paths and data.
+      render: text
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: R version, operating system, and relevant package versions.
+    validations:
+      required: true
